@@ -1,30 +1,24 @@
-const bodyParser = require("body-parser");
-const ejs = require("ejs");
-const { request } = require("express");
 const express = require("express");
+const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 
 
 const app = express();
 
-app.use(bodyParser.urlencoded({ extended: true }));
-// app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({
+    extended: true,
+}));
 app.use(express.static("public"));
-
-app.set('view engine', 'ejs');
-
-
 
 mongoose.connect("mongodb://127.0.0.1:27017/wikiDB");
 
-const articleSchema = {
+const articleSchema = new mongoose.Schema({
     title: String,
-    content: String
-};
+    content: String,
+    description: String
+});
 
 const Article = mongoose.model("Article", articleSchema);
-
-
 
 app.get("/articles", async function (req, res) {
     try {
@@ -50,12 +44,14 @@ app.get("/articles/:articleTitle", async function (req, res) {
 
 
 app.post("/articles", async function (req, res) {
+
     try {
         const newArticle = new Article({
             title: req.body.title,
-            content: req.body.content
+            content: req.body.content,
+            description: req.body.description
+
         });
-        console.log(newArticle);
         await newArticle.save();
 
         res.status(201).send("Article created successfully");
@@ -91,7 +87,10 @@ app.put("/articles/:articleTitle", async function (req, res) {
     const articleTitle = req.params.articleTitle;
     const updatedArticle = {
         title: req.body.title,
-        content: req.body.content
+        content: req.body.content,
+        description: req.body.description
+
+        
     };
     try {
         const article = await Article.findOneAndUpdate(
@@ -109,8 +108,6 @@ app.put("/articles/:articleTitle", async function (req, res) {
     }
 });
 
-
-
 app.patch("/articles/:articleTitle", async function (req, res) {
     try {
         await Article.updateOne(
@@ -122,12 +119,6 @@ app.patch("/articles/:articleTitle", async function (req, res) {
         res.status(500).send("Error updating article: " + err.message);
     }
 });
-
-
-
-
-
-
 
 
 
